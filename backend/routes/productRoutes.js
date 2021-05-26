@@ -8,7 +8,7 @@ import Product from "../models/productModel.js";
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find({});
-
+    
     res.json(products);
   } catch (error) {
     res.status(404).json({ error });
@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ message: "Product Not Found" });
     }
   } catch (error) {
-      console.log(error)
+    console.log(error);
   }
 });
 
