@@ -1,24 +1,37 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Button, Card, Col, Image, ListGroup, Row } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Image,
+  ListGroup,
+  Row,
+} from "react-bootstrap";
 import Rating from "../components/Rating";
 import { listProductsDetails } from "../actions/productActions";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
-const ProductScreen = ({ match }) => {
+const ProductScreen = ({ history, match }) => {
+  const [qty, setQty] = useState(1);
+
   const dispatch = useDispatch();
 
-  const response = useSelector((state) => state.productDetailsReducer);
-
-  const product = response.product.data;
-  const { loading, error } = response;
+  const { loading, error, product } = useSelector(
+    (state) => state.productDetails
+  );
 
   useEffect(() => {
     dispatch(listProductsDetails(match.params.id));
   }, [match, dispatch]);
   // console.log(match.params.id)
+
+  const addToCartHandler = () => {
+    history.push(`/cart/${match.params.id}?qty=${qty}`);
+  };
 
   return (
     <div>
@@ -33,23 +46,23 @@ const ProductScreen = ({ match }) => {
       ) : (
         <Row>
           <Col md={6}>
-            <Image src={product?.image} alt={product?.name} fluid />
+            <Image src={product.image} alt={product.name} fluid />
           </Col>
 
           <Col md={3}>
             <ListGroup variant="flush">
               <ListGroup.Item>
-                <h3>{product?.name}</h3>
+                <h3>{product.name}</h3>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Rating
-                  value={product?.rating}
-                  text={`${product?.numReviews} reviews`}
+                  value={product.rating}
+                  text={`${product.numReviews} reviews`}
                 />
               </ListGroup.Item>
-              <ListGroup.Item>Price: ${product?.price}</ListGroup.Item>
+              <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
               <ListGroup.Item>
-                Description: ${product?.description}
+                Description: ${product.description}
               </ListGroup.Item>
             </ListGroup>
           </Col>
@@ -61,7 +74,7 @@ const ProductScreen = ({ match }) => {
                   <Row>
                     <Col>Price:</Col>
                     <Col>
-                      <strong>${product?.price}</strong>
+                      <strong>${product.price}</strong>
                     </Col>
                   </Row>
                 </ListGroup.Item>
@@ -72,17 +85,39 @@ const ProductScreen = ({ match }) => {
                     <Col>
                       <strong>
                         $
-                        {product?.countInStock > 0 ? "In Stock" : "Out Of Stock"}
+                        {product.countInStock > 0 ? "In Stock" : "Out Of Stock"}
                       </strong>
                     </Col>
                   </Row>
                 </ListGroup.Item>
 
+                {product.countInStock > 0 && (
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Qty</Col>
+                      <Col>
+                        <Form.Control
+                          as="select"
+                          value={qty}
+                          onChange={(e) => setQty(e.target.value)}
+                        >
+                          {[...Array(product.countInStock).keys()].map((x) => (
+                            <option key={x + 1} value={x + 1}>
+                              {x + 1}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Col>
+                    </Row>
+                  </ListGroup.Item>
+                )}
+
                 <ListGroup.Item>
                   <Button
+                    onClick={addToCartHandler}
                     className="btn-block"
                     type="button"
-                    disabled={product?.countInStock === 0}
+                    disabled={product.countInStock === 0}
                   >
                     Add To Cart
                   </Button>
